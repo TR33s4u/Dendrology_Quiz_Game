@@ -19,7 +19,7 @@
   <title>Dendrology Quiz v5.0.1</title>
 </head>
 <body>
-  <!-- UI: confetti overlay (Ultimate Test finish) -->
+  <!-- UI: confetti overlay -->
   <canvas id="confettiCanvas"></canvas>
   
   <!-- ========== HOME HEADER ========== -->
@@ -49,15 +49,29 @@
           <strong>Identification needs a steady connection.</strong> Photos load from iNaturalist as you play.
         </p>
         <div class="set-row" id="flashModeExtras" style="display:none;margin-top:10px;padding:10px;border-radius:10px;border:1px solid rgba(61,139,110,0.35);background:rgba(61,139,110,0.08);">
-          <label class="chk-label"><input type="checkbox" id="flashLookalikesToggle" /> Show common look-alikes (incorrect similar species)</label>
+          <label class="chk-label"><input type="checkbox" id="flashLookalikesToggle" /> Show common look-alikes</label>
+          <div id="desc-flashLookalikesToggle" class="chk-desc" hidden>Lists a few other species that are easy to confuse with this one.</div>
           <label class="chk-label" style="margin-top:8px;"><input type="checkbox" id="flashInfiniteToggle" /> Infinite flash cards</label>
+          <div id="desc-flashInfiniteToggle" class="chk-desc" hidden>Keeps drawing random cards from your species pool with no end.</div>
         </div>
         <span class="label" style="margin-top:12px;display:block;" id="answerInputLabel">Answer input <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(pick one or both)</span></span>
         <div class="mode-select" id="playStyleSelect" aria-label="Quiz or typing">
           <button type="button" class="mode-btn active" id="playStyleQuiz" data-style="quiz">Quiz</button>
           <button type="button" class="mode-btn" id="playStyleTyping" data-style="typing">Typing</button>
         </div>
+        <p style="font-size:0.72rem;color:var(--muted);margin:6px 0 0;">If both are on, each question randomly uses quiz or typing.</p>
       </div>
+
+      <div class="set-row" id="typeModeSection" style="margin-top:12px;padding:12px;border-radius:12px;border:1px solid rgba(61,139,110,0.45);background:rgba(61,139,110,0.08);">
+        <span class="label" style="color:#a8e0c4;">Typing options</span>
+        <div id="typeModeExtras" class="type-mode-extras hidden">
+          <label class="chk-label"><input type="checkbox" id="typeTimerOffToggle" /> No timer (practice only)</label>
+          <div id="desc-typeTimerOffToggle" class="chk-desc" hidden>Unlimited time while typing.</div>
+          <label class="chk-label" style="margin-top:8px;"><input type="checkbox" id="typeSuggestToggle" checked /> Suggest matches while typing</label>
+          <div id="desc-typeSuggestToggle" class="chk-desc">Shows names that match what you have typed.</div>
+        </div>
+      </div>
+      <input type="checkbox" id="typeAnswerToggle" class="hidden" tabindex="-1" aria-hidden="true" />
 
       <div class="set-row" id="countSelectRow">
         <span class="label">Number of questions</span>
@@ -81,6 +95,90 @@
         </div>
       </div>
 
+      <div class="set-row" id="rowTimeLimit">
+        <div style="display:flex;justify-content:space-between;"><span class="label">Time per question</span><span id="timeLimitLabel" style="color:#a8e0c4;font-weight:600;">15s</span></div>
+        <input type="range" id="timeLimitSlider" min="5" max="60" value="15" step="5" style="width:100%;accent-color:#3d8b6e;" />
+        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);"><span>5s</span><span>60s</span></div>
+      </div>
+
+      <div class="set-row">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="label">Answer button size</span>
+          <span id="btnSizeLabel" style="color:#a8e0c4;font-weight:600;font-size:0.9rem;">Medium</span>
+        </div>
+        <input type="range" id="btnSizeSlider" min="1" max="5" value="3" step="1" style="width:100%;accent-color:#3d8b6e;" />
+      </div>
+
+      <div class="set-row" id="picTimeSelect">
+        <div style="display:flex;justify-content:space-between;"><span class="label">Picture appears at</span><span id="picTimeLabel" style="color:#a8e0c4;font-weight:600;">5s left</span></div>
+        <input type="range" id="picTimeSlider" min="1" max="60" value="5" step="1" style="width:100%;accent-color:#3d8b6e;" />
+      </div>
+
+      <div class="set-row" id="rowNoPics">
+        <label class="chk-label"><input type="checkbox" id="noPicsToggle" /> No pictures</label>
+        <div id="desc-noPicsToggle" class="chk-desc" hidden>Hides the photo area and does not load species images.</div>
+      </div>
+
+      <div class="set-row">
+        <label class="chk-label"><input type="checkbox" id="speakToggle" /> Read question aloud</label>
+        <div id="desc-speakToggle" class="chk-desc" hidden>Uses your device voice to read each question.</div>
+      </div>
+
+      <div class="set-row">
+        <label class="chk-label"><input type="checkbox" id="pronToggle" /> Show pronunciations</label>
+        <div id="desc-pronToggle" class="chk-desc" hidden>Shows phonetic pronunciation in parentheses.</div>
+      </div>
+
+      <div class="set-row">
+        <label class="chk-label"><input type="checkbox" id="familyNameToggle" /> Show family names on questions</label>
+        <div id="desc-familyNameToggle" class="chk-desc" hidden>Adds the family name under the question.</div>
+      </div>
+
+      <div class="set-row" id="rowShowMatches">
+        <label class="chk-label"><input type="checkbox" id="showMatchesToggle" checked /> Show matches on all options after answer</label>
+      </div>
+
+      <div class="set-row">
+        <label class="chk-label"><input type="checkbox" id="lobsterToggle" /> Lobster font</label>
+      </div>
+
+      <!-- Desktop Keyboard Shortcuts Section -->
+      <div class="set-row" id="keybindSection">
+        <button type="button" id="openKeybindBtn" class="big-btn" style="margin:0;padding:12px;font-size:0.95rem;background:var(--option-bg);border:2px solid rgba(61,139,110,0.45);color:#a8e0c4;">
+          ⌨️ Desktop keyboard shortcuts…
+        </button>
+      </div>
+
+      <div id="keybindPanel" class="hidden" style="display:none;margin-top:8px;padding:12px;border-radius:12px;border:1px solid rgba(61,139,110,0.4);background:rgba(30,58,44,0.65);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+          <span style="font-size:1rem;color:#a8e0c4;font-weight:600;">Desktop keyboard</span>
+          <button type="button" id="keybindPanelDone" class="big-btn" style="margin:0;padding:8px 16px;width:auto;min-width:72px;">Done</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin:0 0 10px;">Click a key badge, then press a new key. Esc cancels.</p>
+        <div id="keybindList" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <label class="chk-label" style="margin-top:12px;display:flex;align-items:flex-start;gap:8px;">
+          <input type="checkbox" id="homeRowKeysToggle" style="margin-top:3px;" />
+          <span>No numpad: select answers with <strong>U I</strong> / <strong>J K</strong> / <strong>N M</strong></span>
+        </label>
+        <button type="button" id="keybindResetBtn" class="big-btn" style="margin-top:12px;padding:10px;background:var(--option-bg);border:2px solid rgba(61,139,110,0.45);color:#a8e0c4;">Reset keys to defaults</button>
+      </div>
+
+      <!-- Leaderboard Tools -->
+      <div class="set-row" id="leaderboardSection">
+        <button type="button" id="openLeaderboardBtn" class="big-btn" style="margin:0;padding:12px;font-size:0.95rem;background:var(--option-bg);border:2px solid rgba(61,139,110,0.45);color:#a8e0c4;">
+          🏆 Leaderboard save / load…
+        </button>
+      </div>
+
+      <div id="leaderboardPanel" class="hidden" style="display:none;margin-top:8px;margin-bottom:14px;padding:12px;border-radius:12px;border:1px solid rgba(61,139,110,0.4);background:rgba(30,58,44,0.65);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+          <span style="font-size:1rem;color:#a8e0c4;font-weight:600;">Leaderboard</span>
+          <button type="button" id="leaderboardPanelDone" class="big-btn" style="margin:0;padding:8px 16px;width:auto;min-width:72px;">Done</button>
+        </div>
+        <button type="button" id="exportLbBtn" style="width:100%;margin-bottom:8px;background:transparent;border:1px solid #5a7a6a;color:#a8e0c4;padding:8px 12px;border-radius:8px;font-size:0.8rem;cursor:pointer;">Download top scores</button>
+        <button type="button" id="clearLbBtn" style="width:100%;background:transparent;border:1px solid #5a7a6a;color:#8aa899;padding:8px 12px;border-radius:8px;font-size:0.8rem;cursor:pointer;">Clear leaderboard</button>
+      </div>
+
       <!-- Presets -->
       <div class="set-row" id="presetSection" style="margin-bottom:10px;">
         <span class="label" style="font-size:0.95rem;color:#a8e0c4;">Presets</span>
@@ -101,11 +199,20 @@
         </label>
       </div>
 
-      <!-- Species List Selection -->
+      <!-- Species List Section -->
       <div class="set-row" id="familySection" style="margin-top:8px;">
-        <span class="label" style="font-size:0.95rem;color:#a8e0c4;">Species by Family</span>
+        <button type="button" id="openSpeciesBtn" class="big-btn" style="margin:0;padding:12px;font-size:0.95rem;background:var(--option-bg);border:2px solid rgba(61,139,110,0.45);color:#a8e0c4;">
+          🌲 Species list…
+        </button>
         <p id="familySummary" style="font-size:0.8rem;color:#a8e0c4;margin:6px 0 0;">All species</p>
-        <div style="display:flex;gap:8px;margin:8px 0;">
+      </div>
+
+      <div id="speciesPanel" class="hidden" style="display:none;margin-top:8px;margin-bottom:10px;padding:12px;border-radius:12px;border:1px solid rgba(61,139,110,0.4);background:rgba(30,58,44,0.65);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+          <span style="font-size:1rem;color:#a8e0c4;font-weight:600;">Species by family</span>
+          <button type="button" id="speciesPanelDone" class="big-btn" style="margin:0;padding:8px 16px;width:auto;min-width:72px;">Done</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
           <button type="button" id="familyAllBtn" class="family-all-btn" style="flex:1;">Clear selection (= all)</button>
         </div>
         <div id="familyCheckList" class="family-check-list"><span style="color:#8aa899;font-size:0.85rem;">Loading…</span></div>
@@ -129,6 +236,7 @@
         <button type="button" id="settingsBtn" class="settings-gear" title="Settings">⚙️ Settings</button>
       </div>
       <p>This game helps you learn the <strong>scientific names</strong> tied to the species on the Dendrology list (2026, alphabetical by family).<br>
+      Pronunciations are shown in parentheses.<br>
       <em style="color:#8aa899;">Photos are fetched automatically via iNaturalist.</em></p>
       <div style="margin:16px 0 12px;text-align:left;">
         <label for="playerName" style="display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px;">Your name (for leaderboard)</label>
@@ -158,12 +266,18 @@
       <span class="timer-text" id="timerText">15</span>
     </div>
 
+    <!-- Resizable Image Wrap -->
     <div class="image-wrap" id="imageWrap">
       <div class="image-slot" id="imageSlot">
         <span class="image-placeholder" id="imgPlaceholder">🌿</span>
         <span class="image-loading hidden" id="imgLoading">Loading photo…</span>
         <img id="speciesImg" alt="Species photo" />
+        <div id="photoRateRow" class="photo-rate-row hidden" aria-label="Rate photo">
+          <button type="button" id="photoHelpfulBtn" class="photo-rate-btn yes" title="Previous photo ([)">[ Prev</button>
+          <button type="button" id="photoUnhelpfulBtn" class="photo-rate-btn no" title="Next photo (])">Next ]</button>
+        </div>
       </div>
+      <div class="img-resize-handle" id="imgResizeHandle" title="Drag to resize photo area">⋯</div>
     </div>
     <p id="imgCredit"></p>
 
@@ -171,9 +285,48 @@
 
     <div class="prompt-label" id="promptLabel">Scientific name</div>
     <div class="prompt" id="prompt"></div>
+
+    <!-- Flash Card Body -->
+    <div id="flashCard" class="flash-card hidden">
+      <div class="flash-line"><span class="flash-k">Common</span> <span id="flashCommon"></span></div>
+      <div class="flash-line"><span class="flash-k">Scientific</span> <span id="flashSci"></span></div>
+      <div class="flash-line"><span class="flash-k">Family</span> <span id="flashFamily"></span></div>
+      <div class="flash-line"><span class="flash-k">Leaf</span> <span id="flashLeaf"></span></div>
+      <div class="flash-line"><span class="flash-k">Zones</span> <span id="flashZones"></span></div>
+      <div class="flash-line"><span class="flash-k">Range</span> <span id="flashRange"></span></div>
+      <div class="flash-line"><span class="flash-k">Notes</span> <span id="flashNotes"></span></div>
+      <div class="flash-line"><span class="flash-k">Invasive?</span> <span id="flashInvasive"></span></div>
+      <div id="flashLookalikes" class="flash-lookalikes hidden"></div>
+      <div id="flashMediaRow" class="flash-media-row">
+        <div id="flashPhotoGrid" class="flash-photo-grid"></div>
+        <div id="flashRangeMapBox" class="flash-range-map-box">
+          <div class="flash-range-map-title">Growing range</div>
+          <div id="flashRangeMap" class="flash-range-map" aria-label="Range map"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Standard MC Options -->
     <div class="options" id="options"></div>
+
+    <!-- Type Answer Section -->
+    <div id="typeAnswerArea" class="type-answer-area hidden">
+      <input type="text" id="typeAnswerInput" class="type-answer-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer…" />
+      <div id="typeSuggestList" class="type-suggest-list"></div>
+      <button type="button" id="typeSubmitBtn" class="big-btn" style="margin-top:8px;padding:10px;">Submit answer</button>
+    </div>
+
     <div class="feedback hidden" id="feedback"></div>
     <button class="next-btn hidden" id="nextBtn">Next Question →</button>
+
+    <!-- Flash Confidence Row -->
+    <div id="flashConfidenceRow" class="flash-confidence-row" aria-label="How well do you know this species?">
+      <button type="button" class="flash-conf-btn" data-rating="1"><span class="flash-conf-num">1</span><span class="flash-conf-label">Don't know</span></button>
+      <button type="button" class="flash-conf-btn" data-rating="2"><span class="flash-conf-num">2</span><span class="flash-conf-label">Don't know some</span></button>
+      <button type="button" class="flash-conf-btn" data-rating="3"><span class="flash-conf-num">3</span><span class="flash-conf-label">Average</span></button>
+      <button type="button" class="flash-conf-btn" data-rating="4"><span class="flash-conf-num">4</span><span class="flash-conf-label">Know some</span></button>
+      <button type="button" class="flash-conf-btn" data-rating="5"><span class="flash-conf-num">5</span><span class="flash-conf-label">Know all</span></button>
+    </div>
   </div>
 
   <!-- ========== END / RESULTS SCREEN ========== -->
@@ -186,7 +339,6 @@
     </div>
   </div>
 
-  <!-- Main Game Script -->
   <script src="js/app.js"></script>
 </body>
 </html>
