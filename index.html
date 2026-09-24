@@ -1,21 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Document Metadata -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Title</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1a14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dendrology Quiz">
+  <meta name="application-name" content="Dendrology Quiz">
+  <meta name="description" content="Practice scientific and common names for dendrology species.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Dendrology Quiz v5.0.1</title>
+</head>
+<body>
+  <!-- UI: confetti overlay (Ultimate Test finish) -->
+  <canvas id="confettiCanvas"></canvas>
+  
+  <!-- ========== HOME HEADER ========== -->
+  <h1>🌲 Dendrology Quiz</h1>
+  <p class="subtitle" id="appVersion">v5.0.1 · Species List 2026</p>
 
-    <!-- External Stylesheets and Resources -->
-    <link rel="stylesheet" href="css/style.css">
-  </head>
-  <body>
-    <!-- Visible Content and Structure -->
-    <header>...</header>
-    <main>...</main>
+  <!-- ========== SETTINGS PANEL ========== -->
+  <div class="settings-panel hidden" id="settingsPanel">
+    <div class="settings-inner">
+      <div class="settings-header">
+        <div class="settings-title" style="margin:0;text-align:left;">Settings</div>
+        <button type="button" id="closeSettingsBtn" class="big-btn" style="margin:0;padding:10px 18px;width:auto;flex-shrink:0;">Done</button>
+      </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/app.js"></script>
-  </body>
+      <div class="set-row">
+        <span class="label">Mode <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(pick one or more)</span></span>
+        <div class="mode-select" id="modeSelect">
+          <button type="button" class="mode-btn active" data-mode="sci-to-common">Sci → Common</button>
+          <button type="button" class="mode-btn" data-mode="common-to-sci">Common → Sci</button>
+          <button type="button" class="mode-btn" data-mode="family">Family names</button>
+          <button type="button" class="mode-btn" data-mode="flash">Flash cards</button>
+          <button type="button" class="mode-btn" data-mode="identify">Identification</button>
+          <button type="button" class="mode-btn" data-mode="invasive">Invasive or not?</button>
+        </div>
+        <p style="font-size:0.72rem;color:var(--muted);margin:6px 0 0;">Mixed modes rotate across questions in one game. Identification shows a photo first — name the tree.</p>
+        <p id="identifyNetNote" class="chk-desc" style="display:none;margin-top:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(201,162,39,0.45);background:rgba(201,162,39,0.1);color:#e8d5a3;">
+          <strong>Identification needs a steady connection.</strong> Photos load from iNaturalist as you play.
+        </p>
+        <div class="set-row" id="flashModeExtras" style="display:none;margin-top:10px;padding:10px;border-radius:10px;border:1px solid rgba(61,139,110,0.35);background:rgba(61,139,110,0.08);">
+          <label class="chk-label"><input type="checkbox" id="flashLookalikesToggle" /> Show common look-alikes (incorrect similar species)</label>
+          <label class="chk-label" style="margin-top:8px;"><input type="checkbox" id="flashInfiniteToggle" /> Infinite flash cards</label>
+        </div>
+        <span class="label" style="margin-top:12px;display:block;" id="answerInputLabel">Answer input <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(pick one or both)</span></span>
+        <div class="mode-select" id="playStyleSelect" aria-label="Quiz or typing">
+          <button type="button" class="mode-btn active" id="playStyleQuiz" data-style="quiz">Quiz</button>
+          <button type="button" class="mode-btn" id="playStyleTyping" data-style="typing">Typing</button>
+        </div>
+      </div>
+
+      <div class="set-row" id="countSelectRow">
+        <span class="label">Number of questions</span>
+        <div class="time-select" id="countSelect">
+          <button class="count-btn" data-count="5">5</button>
+          <button class="count-btn active" data-count="10">10</button>
+          <button class="count-btn" data-count="20">20</button>
+          <button class="count-btn" data-count="50">50</button>
+          <button class="count-btn" data-count="100">100</button>
+        </div>
+      </div>
+
+      <div class="set-row" id="choicesRow">
+        <span class="label">Answer choices per question</span>
+        <div class="time-select" id="choicesSelect">
+          <button class="choice-btn" data-choices="2">2</button>
+          <button class="choice-btn" data-choices="3">3</button>
+          <button class="choice-btn active" data-choices="4">4</button>
+          <button class="choice-btn" data-choices="5">5</button>
+          <button class="choice-btn" data-choices="6">6</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="set-row" id="presetSection" style="margin-bottom:10px;">
+        <span class="label" style="font-size:0.95rem;color:#a8e0c4;">Presets</span>
+        <label class="chk-label" style="font-weight:600;color:#a8e0c4;margin-top:6px;">
+          <input type="checkbox" id="quizTest1Toggle" /> Quiz Test #1 (preset species list)
+        </label>
+        <label class="chk-label" style="font-weight:600;color:#a8e0c4;margin-top:8px;">
+          <input type="checkbox" id="quizTest2Toggle" /> Quiz Test #2 (preset species list)
+        </label>
+        <label class="chk-label" style="font-weight:600;color:#a8e0c4;margin-top:8px;">
+          <input type="checkbox" id="quizTest3Toggle" /> Quiz Test #3 (preset species list)
+        </label>
+        <label class="chk-label" style="font-weight:600;color:#a8e0c4;margin-top:8px;">
+          <input type="checkbox" id="quizTest4Toggle" /> Quiz Test #4 (preset species list)
+        </label>
+        <label class="chk-label" style="font-weight:600;color:#a8e0c4;margin-top:8px;">
+          <input type="checkbox" id="quizTest5Toggle" /> Quiz Test #5 (preset species list)
+        </label>
+      </div>
+
+      <!-- Species List Selection -->
+      <div class="set-row" id="familySection" style="margin-top:8px;">
+        <span class="label" style="font-size:0.95rem;color:#a8e0c4;">Species by Family</span>
+        <p id="familySummary" style="font-size:0.8rem;color:#a8e0c4;margin:6px 0 0;">All species</p>
+        <div style="display:flex;gap:8px;margin:8px 0;">
+          <button type="button" id="familyAllBtn" class="family-all-btn" style="flex:1;">Clear selection (= all)</button>
+        </div>
+        <div id="familyCheckList" class="family-check-list"><span style="color:#8aa899;font-size:0.85rem;">Loading…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== IN-QUIZ SCORE BAR ========== -->
+  <div class="stats hidden" id="stats">
+    <button type="button" id="cancelQuizBtn" class="settings-gear-sm" title="Cancel quiz" style="margin-left:0;margin-right:8px;">✕ Cancel</button>
+    <div>Score: <strong id="score">0</strong></div>
+    <div>Q: <strong id="qNum">0</strong>/<span id="totalQ">10</span></div>
+    <div>Streak: <strong id="streak">0</strong></div>
+    <button type="button" id="settingsBtnQuiz" class="settings-gear-sm" title="Settings">⚙️</button>
+  </div>
+
+  <!-- ========== START / HOME SCREEN ========== -->
+  <div class="card" id="startScreen">
+    <div class="start-screen">
+      <div class="home-toolbar">
+        <button type="button" id="settingsBtn" class="settings-gear" title="Settings">⚙️ Settings</button>
+      </div>
+      <p>This game helps you learn the <strong>scientific names</strong> tied to the species on the Dendrology list (2026, alphabetical by family).<br>
+      <em style="color:#8aa899;">Photos are fetched automatically via iNaturalist.</em></p>
+      <div style="margin:16px 0 12px;text-align:left;">
+        <label for="playerName" style="display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px;">Your name (for leaderboard)</label>
+        <input type="text" id="playerName" maxlength="24" placeholder="Enter name…" autocomplete="nickname"
+          style="width:100%;padding:12px 14px;border-radius:10px;border:2px solid rgba(61,139,110,0.35);background:var(--option-bg);color:var(--text);font-size:1rem;outline:none;" />
+      </div>
+      <button type="button" class="big-btn" id="startBtn" onclick="window.startQuiz(false)">Start 10-question quiz</button>
+      <button type="button" id="guestBtn" style="display:block;width:100%;margin-top:10px;padding:12px;background:transparent;border:2px solid rgba(61,139,110,0.4);color:#a8e0c4;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;"
+        onclick="window.startQuiz(true)">Take test as guest</button>
+      <button type="button" id="ultimateBtn" style="display:block;width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#3d8b6e,#2a5a48);border:2px solid #a8e0c4;color:#fff;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;"
+        onclick="window.startQuiz('ultimate')">🌟 Ultimate Test (all species)</button>
+      
+      <div id="leaderboardBox" class="leaderboard-box">
+        <div class="leaderboard-title">🏆 Leaderboard (this device)</div>
+        <div id="leaderboardList" class="leaderboard-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== QUIZ SCREEN ========== -->
+  <div class="card hidden" id="quizScreen">
+    <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+
+    <div class="timer-row">
+      <span class="timer-label">Time left</span>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+      <span class="timer-text" id="timerText">15</span>
+    </div>
+
+    <div class="image-wrap" id="imageWrap">
+      <div class="image-slot" id="imageSlot">
+        <span class="image-placeholder" id="imgPlaceholder">🌿</span>
+        <span class="image-loading hidden" id="imgLoading">Loading photo…</span>
+        <img id="speciesImg" alt="Species photo" />
+      </div>
+    </div>
+    <p id="imgCredit"></p>
+
+    <button class="hint-btn" id="hintBtn">👁 Reveal photo now</button>
+
+    <div class="prompt-label" id="promptLabel">Scientific name</div>
+    <div class="prompt" id="prompt"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback hidden" id="feedback"></div>
+    <button class="next-btn hidden" id="nextBtn">Next Question →</button>
+  </div>
+
+  <!-- ========== END / RESULTS SCREEN ========== -->
+  <div class="card hidden" id="endScreen">
+    <div class="end-screen">
+      <h2 style="margin-bottom:8px;color:#a8e0c4;">Quiz Complete!</h2>
+      <p id="endMsg"></p>
+      <button class="big-btn" id="startOverBtn" style="margin-bottom:10px;">Start Over</button>
+      <button class="big-btn" id="homeBtn" style="background:var(--option-bg);border:2px solid var(--accent);">← Back to Home</button>
+    </div>
+  </div>
+
+  <!-- Main Game Script -->
+  <script src="js/app.js"></script>
+</body>
 </html>
